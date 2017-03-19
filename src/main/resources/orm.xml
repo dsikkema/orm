@@ -1,0 +1,6 @@
+<entities>
+	<entity name="person">
+		<property name="name" isRequired="true" type="string"/>
+		<property name="age" isRequired="false" type="integer"/>
+	</entity>
+</entities>

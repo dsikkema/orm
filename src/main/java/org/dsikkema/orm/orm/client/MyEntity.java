@@ -4,9 +4,10 @@ import java.util.Map;
 
 import org.dsikkema.orm.orm.BaseEntity;
 import org.dsikkema.orm.orm.EntityDefinition;
+import org.dsikkema.orm.orm.PropertyData;
 
 public class MyEntity extends BaseEntity {
-	private MyEntity(EntityDefinition definition, Map<String, Object> data) {
+	private MyEntity(EntityDefinition definition, Map<String, PropertyData> data) {
 		super(definition, data);
 	}
 	
@@ -19,11 +20,11 @@ public class MyEntity extends BaseEntity {
 			return new MyEntity(this.definition, this.data);
 		}
 		
-		public static class Factory {
+		public static class Factory extends BaseEntity.Builder.Factory {
 			private org.dsikkema.orm.orm.EntityDefinition.Factory definitionFactory;
 
 			public Factory(EntityDefinition.Factory definitionFactory) {
-				this.definitionFactory = definitionFactory;
+				super(definitionFactory);
 			}
 			
 			public Builder create(String entityType) {

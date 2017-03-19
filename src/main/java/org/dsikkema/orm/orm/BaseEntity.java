@@ -3,7 +3,9 @@ package org.dsikkema.orm.orm;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BaseEntity {
+import org.dsikkema.orm.orm.client.MyEntity.Builder;
+
+abstract public class BaseEntity {
 	private final Map<String, PropertyData> data;
 	private EntityDefinition definition;
 
@@ -63,6 +65,16 @@ public class BaseEntity {
 			}
 		}
 		
-		abstract public BaseEntity build() ;
+		abstract public BaseEntity build();
+		
+		abstract public static class Factory {
+			private org.dsikkema.orm.orm.EntityDefinition.Factory definitionFactory;
+
+			public Factory(EntityDefinition.Factory definitionFactory) {
+				this.definitionFactory = definitionFactory;
+			}
+			
+			abstract public Builder create(String entityType);
+		}
 	}
 }
