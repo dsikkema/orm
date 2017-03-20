@@ -1,15 +1,17 @@
-package org.dsikkema.orm.orm;
+package org.dsikkema.orm.orm.entity.property;
 
 public class PropertyDefinition {
 	
 	private String name;
 	private boolean isRequired;
 	private Type type;
+	private String defaultValue;
 
-	public PropertyDefinition(String name, boolean isRequired, Type type) {
+	public PropertyDefinition(String name, boolean isRequired, Type type, String defaultValue) {
 		this.name = name;
 		this.isRequired = isRequired;
 		this.type = type;
+		this.defaultValue = defaultValue;
 	}
 	
 	public String getName() {
@@ -22,5 +24,9 @@ public class PropertyDefinition {
 	
 	public Type getType() {
 		return this.type;
+	}
+	
+	public String getDefaultValue() {
+		return this.defaultValue;
 	}
 }

@@ -1,8 +1,10 @@
-package org.dsikkema.orm.orm;
+package org.dsikkema.orm.orm.entity;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import org.dsikkema.orm.orm.entity.property.PropertyDefinition;
 
 public class EntityDefinition {
 	private Map<String, PropertyDefinition> propertyDefinitions;

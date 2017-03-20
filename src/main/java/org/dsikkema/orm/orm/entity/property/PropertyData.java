@@ -1,4 +1,4 @@
-package org.dsikkema.orm.orm;
+package org.dsikkema.orm.orm.entity.property;
 
 public class PropertyData {
 
