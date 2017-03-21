@@ -44,6 +44,10 @@ public class PropertyData {
 	
 		return (int)this.val;
 	}
+
+	public Type getType() {
+		return this.definition.getType();
+	}
 	
 	private boolean isInt(String in) {
 	    try {

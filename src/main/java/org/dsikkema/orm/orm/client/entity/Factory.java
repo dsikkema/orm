@@ -5,8 +5,6 @@ import org.dsikkema.orm.orm.entity.BuilderFactory;
 import org.dsikkema.orm.orm.entity.EntityDefinition;
 
 public class Factory extends BuilderFactory {
-	private org.dsikkema.orm.orm.entity.EntityDefinition.Factory definitionFactory;
-
 	public Factory(EntityDefinition.Factory definitionFactory) {
 		super(definitionFactory);
 	}

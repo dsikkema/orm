@@ -3,6 +3,7 @@ package org.dsikkema.orm.orm.entity;
 import java.sql.ResultSet;
 
 import org.dsikkema.orm.orm.db.DbConnection;
+import org.dsikkema.orm.orm.entity.property.PropertyData;
 import org.dsikkema.orm.orm.entity.property.PropertyDefinition;
 
 public class BaseRepository {
@@ -11,7 +12,7 @@ public class BaseRepository {
 	private EntityDefinition definition;
 	private BuilderFactory builderFactory;
 	
-	BaseRepository(
+	protected BaseRepository(
 		DbConnection dbConn,
 		EntityDefinition definition,
 		BuilderFactory builderFactory
@@ -70,12 +71,12 @@ public class BaseRepository {
         BaseEntity entity;
         
     	for (String property: this.definition.getPropertyDefinitions().keySet()) {
-    		values += builder.getProperty(property) + "','";
+    		values += this.getProperty(builder.getProperty(property)) + "','";
     		fields += property + ",";
     	}
     	
     	values = "'" + values.substring(0, values.length() - 2); // remove trailing comma, quotation
-    	fields = fields.substring(0, values.length() - 1);
+    	fields = fields.substring(0, fields.length() - 1);
         sql = "INSERT INTO " + this.definition.getEntityType() + " (" + fields + ") VALUES (" + values + ");";
         
         try {
@@ -93,6 +94,16 @@ public class BaseRepository {
         }
         
         return entity;
+    }
+    
+    private String getProperty(PropertyData property) {
+    	switch (property.getType()) {
+	    	case INT:
+	    		return String.valueOf(property.getIntValue());
+			default:
+			case STRING:
+				return property.getStringValue();
+    	}
     }
     
     /**

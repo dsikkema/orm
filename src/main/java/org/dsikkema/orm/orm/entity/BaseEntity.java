@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.dsikkema.orm.orm.entity.property.PropertyData;
+import org.dsikkema.orm.orm.entity.property.PropertyDefinition;
 
 abstract public class BaseEntity {
 	private final Map<String, PropertyData> data;
@@ -12,6 +13,11 @@ abstract public class BaseEntity {
 	
 	protected BaseEntity(EntityDefinition definition, Map<String, PropertyData> data, Integer id) {
 		this.definition = definition;
+		for (PropertyDefinition property : this.definition.getPropertyDefinitions().values()) {
+			if (property.isRequired() && !data.containsKey(property.getName())) {
+				throw new RuntimeException("Required property " + property.getName() + " is missing");
+			}
+		}
 		this.data = data;
 	}
 

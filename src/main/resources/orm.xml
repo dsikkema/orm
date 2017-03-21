@@ -1,6 +1,6 @@
 <entities>
 	<entity name="person">
 		<property name="name" required="true" type="string"/>
-		<property name="age" required="false" type="integer" default="0"/>
+		<property name="age" required="false" type="int" default="0"/>
 	</entity>
 </entities>

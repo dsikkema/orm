@@ -2,6 +2,7 @@ package org.dsikkema.orm.orm.entity;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.dsikkema.orm.orm.entity.property.PropertyDefinition;
@@ -17,6 +18,7 @@ public class EntityDefinition {
 	private String entityType;
 	
 	private EntityDefinition(String entityType) {
+		this.propertyDefinitions = new HashMap<String, PropertyDefinition>();
 		this.scan(entityType);
 		this.entityType = entityType;
 	}
@@ -61,7 +63,7 @@ public class EntityDefinition {
 	private void scan(String entityType) {
 		Document doc;
 		try {
-			File inputFile = new File("orm.xml");
+			File inputFile = new File("src/main/resources/orm.xml");
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			doc = dBuilder.parse(inputFile);
@@ -69,16 +71,20 @@ public class EntityDefinition {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		NodeList entityList = doc.getDocumentElement().getElementsByTagName("entities").item(0).getChildNodes();
+		doc.getDocumentElement().normalize();
+		
+		// get entity node
+		NodeList entityList = doc.getElementsByTagName("entity");
 		Node entityNode = null;
 		for (int i = 0; i < entityList.getLength(); i++) {
-			if (entityList.item(i).getAttributes().getNamedItem("name").equals(entityType)) {
+			Node node = entityList.item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE && ((Element)node).getAttribute("name").equals(entityType)) {
 				entityNode = entityList.item(i);
 			}
 		}
 		
 		if (entityNode == null) {
-			// fail
+			throw new RuntimeException("Entity " + entityType + " not found in orm.xml");
 		}
 		
 		String name;
@@ -86,25 +92,29 @@ public class EntityDefinition {
 		Type type;
 		String defaultValue = "";
 		
+		// populate definition list
 		for (int i=0; i<entityNode.getChildNodes().getLength(); i++) {
-			NamedNodeMap property = entityNode.getChildNodes().item(i).getAttributes();
-			name = property.getNamedItem("name").getNodeValue();
-			isRequired = property.getNamedItem("required").getNodeValue() == "true" ? true : false;
-			switch (property.getNamedItem("type").getNodeValue()) {
-				case "int" :
-					type = Type.INT;
-					break;
-				case "string" : 
-				default:
-					type = Type.STRING;
-					break;
-			}
+			Node node = entityNode.getChildNodes().item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				Element element = (Element)node;
+				name = element.getAttribute("name");
+				isRequired = element.getAttribute("required") == "true" ? true : false;
 			
-			if (!isRequired) {
-				defaultValue = property.getNamedItem("default").getNodeValue();
+				switch (element.getAttribute("type")) {
+					case "int" :
+						type = Type.INT;
+						break;
+					case "string" : 
+					default:
+						type = Type.STRING;
+						break;
+				}
+				if (!isRequired) {
+					defaultValue = element.getAttribute("default");
+				}
+				
+				this.propertyDefinitions.put(name, new PropertyDefinition(name, isRequired, type, defaultValue));
 			}
-			
-			this.propertyDefinitions.put(name, new PropertyDefinition(name, isRequired, type, defaultValue));
 		}
 	}
 }
