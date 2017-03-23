@@ -10,18 +10,15 @@ import org.dsikkema.orm.orm.entity.property.PropertyDefinition;
 public class BaseRepository<T> {
 	private DbConnection dbConn;
 	private BaseBuilderFactory builderFactory;
-	private Class<T> entityClass;
 	private EntityDefinition definition;
 	
 	private BaseRepository(
 		DbConnection dbConn,
 		BaseBuilderFactory builderFactory,
-		EntityDefinition definition,
-		Class<T> entityClass
+		EntityDefinition definition
 	) {
 		this.dbConn = dbConn;
 		this.definition = definition;
-		this.entityClass = entityClass;
 		this.builderFactory = builderFactory;
 	}
 	
@@ -149,8 +146,8 @@ public class BaseRepository<T> {
     		this.builderFactory = builderFactory;
     	}
     	
-    	public BaseRepository<T> create(String entityType, Class<T> entityClass) {
-    		return new BaseRepository<T>(this.dbConn, this.builderFactory, this.definitionFactory.create(entityType), entityClass);
+    	public BaseRepository<T> create(String entityType) {
+    		return new BaseRepository<T>(this.dbConn, this.builderFactory, this.definitionFactory.create(entityType));
     	}
     }
 }

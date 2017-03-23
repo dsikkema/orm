@@ -27,7 +27,7 @@ public class Sample
     	// created manually...
     	PersonBuilder builder = personBuilderFactory.create("person");
     	// could get this out of a RepositoryPool
-        BaseRepository<PersonEntity> repo = repositoryFactory.create("person", PersonEntity.class);
+        BaseRepository<PersonEntity> repo = repositoryFactory.create("person");
 
         
     	Sample.load(builder, repo);
