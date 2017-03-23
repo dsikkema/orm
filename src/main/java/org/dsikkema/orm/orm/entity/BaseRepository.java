@@ -1,40 +1,44 @@
 package org.dsikkema.orm.orm.entity;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 
 import org.dsikkema.orm.orm.db.DbConnection;
 import org.dsikkema.orm.orm.entity.property.PropertyData;
 import org.dsikkema.orm.orm.entity.property.PropertyDefinition;
 
-public class BaseRepository {
+public class BaseRepository<T> {
 	private DbConnection dbConn;
-	private Integer id = null;
+	private BaseBuilderFactory builderFactory;
+	private Class<T> entityClass;
 	private EntityDefinition definition;
-	private BuilderFactory builderFactory;
 	
-	protected BaseRepository(
+	private BaseRepository(
 		DbConnection dbConn,
+		BaseBuilderFactory builderFactory,
 		EntityDefinition definition,
-		BuilderFactory builderFactory
+		Class<T> entityClass
 	) {
 		this.dbConn = dbConn;
 		this.definition = definition;
+		this.entityClass = entityClass;
 		this.builderFactory = builderFactory;
 	}
 	
 	/**
      * @return Boolean whether entity was loaded successfully
+     * 
+     * TODO make the reflection less ugly here
      */
-    public BaseEntity load(Integer id) { 
+    public T load(BuilderInterface<T> builder, Integer id) { 
         String sql;
-        BaseBuilder builder = this.builderFactory.create(this.definition.getEntityType());
         // TODO don't hardcode entity_id
-        sql = "select * from " + this.definition.getEntityType() + " where entity_id=" + id + ";";
+        sql = "SELECT * FROM " + definition.getEntityType() + " WHERE entity_id=" + id + ";";
         
         try {
             ResultSet result = dbConn.doQuery(sql);
             if (result.next()) {
-                for (PropertyDefinition property: this.definition.getPropertyDefinitions().values()) {
+                for (PropertyDefinition property: definition.getPropertyDefinitions().values()) {
                     builder.setProperty(property.getName(), result.getString(property.getName()));
                 }
                 builder.setId(id);
@@ -44,7 +48,8 @@ public class BaseRepository {
         } catch (Exception e) {
             throw new RuntimeException("Error loading entity", e);
         }
-        return builder.build();
+        
+    	return builder.build();
     }
     
     /**
@@ -52,7 +57,7 @@ public class BaseRepository {
      */
     public void delete(Integer id) { 
         String sql;
-        sql = "delete from " + this.definition.getEntityType() + " where entity_id=" + id + ";";
+        sql = "delete from " + definition.getEntityType() + " where entity_id=" + id + ";";
         
         try {
             dbConn.doUpdateQuery(sql);
@@ -64,20 +69,20 @@ public class BaseRepository {
     /**
      * you create id and return entity
      */
-    public BaseEntity create(BaseBuilder builder) {
+    public T create(BuilderInterface<T> builder) {
         String sql;
         String values = "";
         String fields = "";
-        BaseEntity entity;
+        T entity;
         
-    	for (String property: this.definition.getPropertyDefinitions().keySet()) {
+    	for (String property: definition.getPropertyDefinitions().keySet()) {
     		values += this.getProperty(builder.getProperty(property)) + "','";
     		fields += property + ",";
     	}
     	
     	values = "'" + values.substring(0, values.length() - 2); // remove trailing comma, quotation
     	fields = fields.substring(0, fields.length() - 1);
-        sql = "INSERT INTO " + this.definition.getEntityType() + " (" + fields + ") VALUES (" + values + ");";
+        sql = "INSERT INTO " + definition.getEntityType() + " (" + fields + ") VALUES (" + values + ");";
         
         try {
             dbConn.doUpdateQuery(sql);
@@ -96,6 +101,29 @@ public class BaseRepository {
         return entity;
     }
     
+    /**
+     * you don't update id but you return entity
+     */
+    public T update(Integer id, BuilderInterface<T> builder) {
+        String sql;
+        String updateString = "";
+        T entity = builder.build();
+        
+    	for (String property: definition.getPropertyDefinitions().keySet()) {
+    		updateString += property + "='" + builder.getProperty(property) + "',";
+    	}
+    	updateString = updateString.substring(0, updateString.length() - 1); // remove trailing comma
+        sql = "UPDATE " + definition.getEntityType() + " SET " + updateString + " WHERE entity_id='" + builder.getId() + "';";
+        
+        try {
+            dbConn.doUpdateQuery(sql);
+        } catch (Exception e) {
+        	throw new RuntimeException("Error saving entity", e);
+        }
+        
+        return entity;
+    }
+    
     private String getProperty(PropertyData property) {
     	switch (property.getType()) {
 	    	case INT:
@@ -106,25 +134,23 @@ public class BaseRepository {
     	}
     }
     
-    /**
-     * you don't update id but you return entity
-     */
-    public BaseEntity update(Integer id, BaseBuilder builder) {
-        String sql;
-        String updateString = "";
-        BaseEntity entity = builder.build();
-        
-    	for (String property: this.definition.getPropertyDefinitions().keySet()) {
-    		updateString += property + "='" + entity.getProperty(property) + "',";
+    public static class Factory<T> {
+    	private DbConnection dbConn;
+    	private BaseBuilderFactory builderFactory;
+		private EntityDefinition.Factory definitionFactory;
+    	
+    	public Factory(
+    		DbConnection dbConn,
+    		EntityDefinition.Factory definitionFactory,
+    		BaseBuilderFactory builderFactory
+    	) {
+    		this.dbConn = dbConn;
+			this.definitionFactory = definitionFactory;
+    		this.builderFactory = builderFactory;
     	}
-    	updateString = updateString.substring(0, updateString.length() - 1); // remove trailing comma
-        sql = "UPDATE " + this.definition.getEntityType() + " SET " + updateString + " WHERE entity_id='" + entity.getId() + "';";
-        
-        try {
-            dbConn.doUpdateQuery(sql);
-        } catch (Exception e) {
-        	throw new RuntimeException("Error saving entity", e);
-        }
-        return entity;
+    	
+    	public BaseRepository<T> create(String entityType, Class<T> entityClass) {
+    		return new BaseRepository<T>(this.dbConn, this.builderFactory, this.definitionFactory.create(entityType), entityClass);
+    	}
     }
 }

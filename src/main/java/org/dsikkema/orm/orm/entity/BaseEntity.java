@@ -6,7 +6,7 @@ import java.util.Map;
 import org.dsikkema.orm.orm.entity.property.PropertyData;
 import org.dsikkema.orm.orm.entity.property.PropertyDefinition;
 
-abstract public class BaseEntity {
+public class BaseEntity implements EntityInterface {
 	private final Map<String, PropertyData> data;
 	private EntityDefinition definition;
 	private Integer id;

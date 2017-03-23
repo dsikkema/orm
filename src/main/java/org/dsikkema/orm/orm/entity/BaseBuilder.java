@@ -6,12 +6,12 @@ import java.util.Map;
 import org.dsikkema.orm.orm.entity.property.PropertyData;
 import org.dsikkema.orm.orm.entity.property.PropertyDefinition;
 
-abstract public class BaseBuilder {
+public class BaseBuilder {
 	protected final EntityDefinition definition;
 	protected final Map<String, PropertyData> data;
 	protected Integer id; 
 
-	protected BaseBuilder(EntityDefinition definition) {
+	public BaseBuilder(EntityDefinition definition) {
 		this.definition = definition;
 		this.data = new HashMap<String, PropertyData>();
 		for (PropertyDefinition property : definition.getPropertyDefinitions().values()) {
@@ -63,9 +63,11 @@ abstract public class BaseBuilder {
 		this.id = id;
 	}
 	
-	public Integer getId(Integer id) {
+	public Integer getId() {
 		return this.id;
 	}
 	
-	abstract public BaseEntity build();
+	public BaseEntity buildBaseEntity() {
+		return new BaseEntity(this.definition, this.data, this.id);
+	}
 }
