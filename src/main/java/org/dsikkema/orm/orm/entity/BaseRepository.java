@@ -7,19 +7,16 @@ import org.dsikkema.orm.orm.db.DbConnection;
 import org.dsikkema.orm.orm.entity.property.PropertyData;
 import org.dsikkema.orm.orm.entity.property.PropertyDefinition;
 
-public class BaseRepository<T> {
+public class BaseRepository<T extends BaseEntity> {
 	private DbConnection dbConn;
-	private BaseBuilderFactory builderFactory;
 	private EntityDefinition definition;
 	
 	private BaseRepository(
 		DbConnection dbConn,
-		BaseBuilderFactory builderFactory,
 		EntityDefinition definition
 	) {
 		this.dbConn = dbConn;
 		this.definition = definition;
-		this.builderFactory = builderFactory;
 	}
 	
 	/**
@@ -27,7 +24,7 @@ public class BaseRepository<T> {
      * 
      * TODO make the reflection less ugly here
      */
-    public T load(BuilderInterface<T> builder, Integer id) { 
+    public T load(BaseBuilder<T> builder, Integer id) { 
         String sql;
         // TODO don't hardcode entity_id
         sql = "SELECT * FROM " + definition.getEntityType() + " WHERE entity_id=" + id + ";";
@@ -66,7 +63,7 @@ public class BaseRepository<T> {
     /**
      * you create id and return entity
      */
-    public T create(BuilderInterface<T> builder) {
+    public T create(BaseBuilder<T> builder) {
         String sql;
         String values = "";
         String fields = "";
@@ -101,7 +98,7 @@ public class BaseRepository<T> {
     /**
      * you don't update id but you return entity
      */
-    public T update(Integer id, BuilderInterface<T> builder) {
+    public T update(Integer id, BaseBuilder<T> builder) {
         String sql;
         String updateString = "";
         T entity = builder.build();
@@ -131,23 +128,20 @@ public class BaseRepository<T> {
     	}
     }
     
-    public static class Factory<T> {
+    public static class Factory<T extends BaseEntity> {
     	private DbConnection dbConn;
-    	private BaseBuilderFactory builderFactory;
 		private EntityDefinition.Factory definitionFactory;
     	
     	public Factory(
     		DbConnection dbConn,
-    		EntityDefinition.Factory definitionFactory,
-    		BaseBuilderFactory builderFactory
+    		EntityDefinition.Factory definitionFactory
     	) {
     		this.dbConn = dbConn;
 			this.definitionFactory = definitionFactory;
-    		this.builderFactory = builderFactory;
     	}
     	
     	public BaseRepository<T> create(String entityType) {
-    		return new BaseRepository<T>(this.dbConn, this.builderFactory, this.definitionFactory.create(entityType));
+    		return new BaseRepository<T>(this.dbConn, this.definitionFactory.create(entityType));
     	}
     }
 }

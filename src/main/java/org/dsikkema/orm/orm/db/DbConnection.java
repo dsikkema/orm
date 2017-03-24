@@ -10,6 +10,8 @@ public class DbConnection {
         try{ 
             Class.forName("com.mysql.jdbc.Driver"); 
             // TODO: store db conn details properly
+            
+            // no, this is not a real DB user and password.
             this.conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/orm?user=root&password=password&useUnicode=true&characterEncoding=UTF-8", "root", "password");
         } catch (Exception e) {
             throw new RuntimeException(e);

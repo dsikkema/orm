@@ -6,7 +6,7 @@ import java.util.Map;
 import org.dsikkema.orm.orm.entity.property.PropertyData;
 import org.dsikkema.orm.orm.entity.property.PropertyDefinition;
 
-public class BaseBuilder {
+abstract public class BaseBuilder<T extends BaseEntity> {
 	protected final EntityDefinition definition;
 	protected final Map<String, PropertyData> data;
 	protected Integer id; 
@@ -67,7 +67,5 @@ public class BaseBuilder {
 		return this.id;
 	}
 	
-	public BaseEntity buildBaseEntity() {
-		return new BaseEntity(this.definition, this.data, this.id);
-	}
+	abstract public T build();
 }

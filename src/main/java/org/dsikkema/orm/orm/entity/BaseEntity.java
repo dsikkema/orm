@@ -5,13 +5,14 @@ import java.util.Map;
 
 import org.dsikkema.orm.orm.entity.property.PropertyData;
 import org.dsikkema.orm.orm.entity.property.PropertyDefinition;
+import org.dsikkema.orm.orm.sample.entity.PersonBuilder;
 
-public class BaseEntity implements EntityInterface {
+abstract public class BaseEntity {
 	private final Map<String, PropertyData> data;
-	private EntityDefinition definition;
+	protected EntityDefinition definition;
 	private Integer id;
 	
-	protected BaseEntity(EntityDefinition definition, Map<String, PropertyData> data, Integer id) {
+	public BaseEntity(EntityDefinition definition, Map<String, PropertyData> data, Integer id) {
 		this.definition = definition;
 		for (PropertyDefinition property : this.definition.getPropertyDefinitions().values()) {
 			if (property.isRequired() && !data.containsKey(property.getName())) {
@@ -30,9 +31,5 @@ public class BaseEntity implements EntityInterface {
 	
 	public Integer getId() {
 		return this.id;
-	}
-	
-	void setId(Integer id) {
-		this.id = id;
 	}
 }

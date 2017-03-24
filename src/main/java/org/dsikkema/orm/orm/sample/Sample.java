@@ -2,7 +2,6 @@ package org.dsikkema.orm.orm.sample;
 
 import org.dsikkema.orm.orm.db.DbConnection;
 import org.dsikkema.orm.orm.entity.BaseRepository;
-import org.dsikkema.orm.orm.entity.BaseBuilderFactory;
 import org.dsikkema.orm.orm.entity.EntityDefinition;
 import org.dsikkema.orm.orm.sample.entity.PersonBuilder;
 import org.dsikkema.orm.orm.sample.entity.PersonEntity;
@@ -15,28 +14,31 @@ public class Sample
 {
     public static void main( String[] args )
     {
-    	// will be hidden behind DI...
+    	// will be hidden behind DI once integrated with Guice
     	EntityDefinition.Factory entityDefinitionFactory = new EntityDefinition.Factory();
-    	PersonBuilder.Factory personBuilderFactory = new PersonBuilder.Factory(entityDefinitionFactory);
     	BaseRepository.Factory<PersonEntity> repositoryFactory = new BaseRepository.Factory<PersonEntity>(
 			new DbConnection(),
-			entityDefinitionFactory,
-			new BaseBuilderFactory(entityDefinitionFactory)
+			entityDefinitionFactory
 		);
     	
-    	// created manually...
-    	PersonBuilder builder = personBuilderFactory.create("person");
-    	// could get this out of a RepositoryPool
-        BaseRepository<PersonEntity> repo = repositoryFactory.create("person");
-
+    	// this will still be created by client code
+    	PersonBuilder builder = PersonEntity.builder();
+        BaseRepository<PersonEntity> repo = repositoryFactory.create("person");    	// TODO get this out of a RepositoryPool
         
-    	Sample.load(builder, repo);
+        /**
+         * replace id value with actually existing values from the db:
+         * 
+         * select entity_id from person;
+         */
+        
+        int id = 24;
+    	Sample.load(builder, repo, id);
     	Sample.create(builder, repo);
     }
 
-	private static void load(PersonBuilder builder, BaseRepository<PersonEntity> repo) {
+	private static void load(PersonBuilder builder, BaseRepository<PersonEntity> repo, int id) {
 		// load
-        PersonEntity person = repo.load(builder, 14);
+        PersonEntity person = repo.load(builder, id);
         System.out.println(person.getName());
         System.out.println(person.getAge());
 	}

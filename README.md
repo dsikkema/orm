@@ -7,9 +7,24 @@ The purpose is to let your application declare entities via xml, and then access
 ## But why
 I want to see what a flexible, general purpose ORM would look like if you tried to adhere to certain standards of design, such as making sure objects are fully ready for use once instantiated (no `configure()` or `init()` methods), heavily using dependency injection, and making sure objects are mostly immutable. 
 
+## How to use
+Eventually I'll create a separate sample project that's easy to build with Maven and run from the terminal, so as not to mix the "framework" with the sample code, but right now, just load the project up in eclipse and run the "Sample" class.
+
+To use in your application:
+ - define an entity and its properties in src/main/resources/orm.xml (person.xml as an example)
+ - make sure the DB schema exists for your entity. "entity_id" is required to be used as the primary key
+ - add two classes for your entity: a builder class and a class that represents the actual entity
+ 	- Builder should extend BaseBuilder, see PersonBuilder as an example. It should have a build method that instantiates your Entity class and may have well-typed and well-named setters.
+ 	- Entity class should extend BaseEntity, see PersonEntity as an example. It should have a static builder() method that returns its dedicated builder, and may have well-typed and well-named getters for properties. It is immutable.
+ - use the builder() method to retrieve the builder in your application
+ - use BaseRepository.Factoy<YourEntityClass> to create an instance of a repository for your entity
+ - You may then populate a builder with information however you please.
+ - Use the repository to do CRUD work on your entity. Load and delete methods just take an ID, but create and update methods take a builder. 
+
 ## Tasks
-### Definitely
+### Definitely TODO
  - escaping sql injection
+ - use "pools" of repositories and definition objects, rather than factories. Duplicate instances unnecessary.
  - if xml validation is kept, then add config.xsd to define config.xml schema, and validate before reading
  - extract DB connection details into another config file (also validate with .xsd)
  - ability to automatically generate SQL script to build the schema for the given entities
@@ -19,11 +34,6 @@ I want to see what a flexible, general purpose ORM would look like if you tried 
  - allow for truly empty (nulled) optional properties without default values
  - use the guice DI container to build dependencies and allow configurable mapping of interfaces
 
-### Maybe
+### Possibly TODO
  - use reflection and annotations off of an Entity class, rather than xml, to define entity
  - provide a tool to generate java code for the boilerplate portions of entity, builder, repository classes
- - simplify retrieval of repository for an entity type using a pool
-
-## Open questions
-
-How many classes should you be required to write in order to work with a new type of entity? Type-safety and compilation safeguards area good reason why you should have to implement at least one: an entity class with getters to reflect the fields of the entity (e.g. `String getName()`), so you don't have to call `getField("field_name")` without a statically guaranteed return type. A similar argument applies to writing methods like `setName(String name)` directly for the builder, rather than client code having to call `setField("field_name", Object value)` etc. But there's value in letting the builder have clunky access so that an application using this framework has one fewer class to write. And *certainly* it is necessary to get around needing to write a new Repository class for each entity.
